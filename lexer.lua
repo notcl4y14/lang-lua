@@ -4,11 +4,13 @@ local lexer = {}
 lexer.__index = lexer
 
 function lexer.new(self, filename, code)
-	local this = setmetable({}, self)
+	local this = setmetatable({}, self)
 
 	this.filename = filename
 	this.code = code
 	this.pos = 0
+
+	this:advance()
 
 	return this
 end
@@ -23,19 +25,21 @@ function lexer.advance(self, delta)
 end
 
 function lexer.notEof(self)
-	return self.pos < string.len(self.code)
+	return self.pos <= string.len(self.code)
 end
 
 function lexer.tokenize(self)
 	local tokens = {}
 
-	while self.notEof() do
-		if self.at() == "+" or self.at() == "-" or self.at() == "*" or self.at() == "/" or self.at() == "%" then
-			table.insert(tokens, Token.new("BinOp", self.at()))
+	while self:notEof() do
+		if self:at() == "+" or self:at() == "-" or self:at() == "*" or self:at() == "/" or self:at() == "%" then
+			table.insert(tokens, Token:new("BinOp", self:at()))
 		end
 
-		self.advance()
+		self:advance()
 	end
 
 	return tokens
 end
+
+return lexer
