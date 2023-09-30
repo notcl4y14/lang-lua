@@ -1,4 +1,5 @@
 local Token = require("token")
+local Error = require("error")
 
 local lexer = {}
 lexer.__index = lexer
@@ -30,16 +31,22 @@ end
 
 function lexer.tokenize(self)
 	local tokens = {}
+	local errors = {}
 
 	while self:notEof() do
-		if self:at() == "+" or self:at() == "-" or self:at() == "*" or self:at() == "/" or self:at() == "%" then
+		if self:at() == " " or self:at() == "\t" or self:at() == "\r" or self:at() == "\n" then
+		elseif self:at() == "+" or self:at() == "-" or self:at() == "*" or self:at() == "/" or self:at() == "%" then
 			table.insert(tokens, Token:new("BinOp", self:at()))
+		else
+			local char = self:at()
+			local pos = {index=self.pos,line=0,column=self.pos}
+			table.insert(errors, Error:new(self.filename, pos, "Undefined character '" .. char .. "'"))
 		end
 
 		self:advance()
 	end
 
-	return tokens
+	return tokens, errors
 end
 
 return lexer
