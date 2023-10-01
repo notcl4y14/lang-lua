@@ -15,7 +15,7 @@ function Token.match(self, type, value)
 end
 
 function Token.asString(self)
-	return "[" .. self.type .. ": " .. self.value .. "]"
+	return "[" .. self.type .. ": " .. tostring(self.value) .. "]"
 end
 
 return Token

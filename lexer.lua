@@ -2,8 +2,20 @@ local Token = require("token")
 local Position = require("position")
 local Error = require("error")
 
+local str_includes = require("utils/string").includes
+
 local lexer = {}
 lexer.__index = lexer
+
+local strings = {
+	WHITESPACE = " \t\r\n",
+	OPERATORS = "+-*/%=.,:;!<>&|",
+	PARENTHESES = "()",
+	BRACKETS = "[]{}",
+	DIGITS = "1234567890",
+	QUOTES = "\"'`",
+	IDENT = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_",
+}
 
 function lexer.new(self, filename, code)
 	local this = setmetatable({}, self)
@@ -36,9 +48,25 @@ function lexer.tokenize(self)
 	local errors = {}
 
 	while self:notEof() do
-		if self:at() == " " or self:at() == "\t" or self:at() == "\r" or self:at() == "\n" then
-		elseif self:at() == "+" or self:at() == "-" or self:at() == "*" or self:at() == "/" or self:at() == "%" then
+		if str_includes(strings.WHITESPACE, self:at()) then
+		elseif str_includes(strings.OPERATORS, self:at()) then
 			table.insert(tokens, Token:new("BinOp", self:at()))
+
+		elseif str_includes(strings.PARENTHESES, self:at()) then
+			table.insert(tokens, Token:new("Paren", self:at()))
+
+		elseif str_includes(strings.BRACKETS, self:at()) then
+			table.insert(tokens, Token:new("Bracket", self:at()))
+
+		elseif str_includes(strings.DIGITS, self:at()) then
+			table.insert(tokens, self:makeNumber())
+
+		elseif str_includes(strings.QUOTES, self:at()) then
+			table.insert(tokens, self:makeString())
+
+		elseif str_includes(strings.IDENT, self:at()) then
+			table.insert(tokens, self:makeIdent())
+
 		else
 			local char = self:at()
 			local pos = self.pos:clone()
@@ -49,6 +77,54 @@ function lexer.tokenize(self)
 	end
 
 	return tokens, errors
+end
+
+function lexer.makeNumber(self)
+	local numStr = ""
+	local float = false
+
+	while self:notEof() and ( str_includes(strings.DIGITS, self:at()) or self:at() == "." ) do
+		if numStr == "." then
+			if float then break end
+			numStr = numStr .. "."
+			float = true
+		else
+			numStr = numStr .. self:at()
+		end
+
+		self:advance()
+	end
+
+	self:advance(-1)
+
+	return Token:new("number", tonumber(numStr))
+end
+
+function lexer.makeString(self)
+	local str = ""
+	local quote = self:at()
+
+	self:advance()
+
+	while self:notEof() and self:at() ~= quote do
+		str = str .. self:at()
+		self:advance()
+	end
+
+	return Token:new("string", str)
+end
+
+function lexer.makeIdent(self)
+	local ident = ""
+
+	while self:notEof() and ( str_includes(strings.IDENT, self:at()) or str_includes(strings.DIGITS, self:at()) ) do
+		ident = ident .. self:at()
+		self:advance()
+	end
+
+	self:advance(-1)
+
+	return Token:new("ident", ident)
 end
 
 return lexer
