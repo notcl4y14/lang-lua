@@ -76,6 +76,8 @@ function lexer.tokenize(self)
 		self:advance()
 	end
 
+	table.insert(tokens, Token:new("eof"))
+
 	return tokens, errors
 end
 
@@ -97,7 +99,7 @@ function lexer.makeNumber(self)
 
 	self:advance(-1)
 
-	return Token:new("number", tonumber(numStr))
+	return Token:new("Number", tonumber(numStr))
 end
 
 function lexer.makeString(self)
@@ -111,7 +113,7 @@ function lexer.makeString(self)
 		self:advance()
 	end
 
-	return Token:new("string", str)
+	return Token:new("String", str)
 end
 
 function lexer.makeIdent(self)
@@ -124,7 +126,7 @@ function lexer.makeIdent(self)
 
 	self:advance(-1)
 
-	return Token:new("ident", ident)
+	return Token:new("Ident", ident)
 end
 
 return lexer

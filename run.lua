@@ -1,4 +1,5 @@
 local Lexer = require("lexer")
+local Parser = require("parser")
 
 local function run(filename, code)
 	local lexer = Lexer:new(filename, code)
@@ -14,6 +15,18 @@ local function run(filename, code)
 
 	for _, token in pairs(tokens) do
 		print(token:asString())
+	end
+
+	local parser = Parser:new(filename, tokens)
+	local ast, err = parser:makeAst()
+
+	if err then
+		print(err:asString())
+		return
+	end
+
+	for _, node in pairs(ast.body) do
+		print(node.type, node.left, node.operator, node.right, node.value)
 	end
 end
 
