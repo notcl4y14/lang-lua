@@ -1,4 +1,5 @@
 local Token = require("token")
+local Position = require("position")
 local Error = require("error")
 
 local lexer = {}
@@ -9,7 +10,7 @@ function lexer.new(self, filename, code)
 
 	this.filename = filename
 	this.code = code
-	this.pos = 0
+	this.pos = Position:new(0, 1, 0)
 
 	this:advance()
 
@@ -17,16 +18,17 @@ function lexer.new(self, filename, code)
 end
 
 function lexer.at(self)
-	return string.sub(self.code, self.pos, self.pos)
+	return string.sub(self.code, self.pos.index, self.pos.index)
 end
 
 function lexer.advance(self, delta)
 	local delta = delta or 1
-	self.pos = self.pos + delta
+	-- self.pos = self.pos + delta
+	self.pos:advance(self:at(), delta)
 end
 
 function lexer.notEof(self)
-	return self.pos <= string.len(self.code)
+	return self.pos.index <= string.len(self.code)
 end
 
 function lexer.tokenize(self)
@@ -39,7 +41,7 @@ function lexer.tokenize(self)
 			table.insert(tokens, Token:new("BinOp", self:at()))
 		else
 			local char = self:at()
-			local pos = {index=self.pos,line=0,column=self.pos}
+			local pos = self.pos:clone()
 			table.insert(errors, Error:new(self.filename, pos, "Undefined character '" .. char .. "'"))
 		end
 

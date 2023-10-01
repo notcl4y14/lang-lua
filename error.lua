@@ -12,7 +12,7 @@ function Error.new(self, filename, pos, details)
 end
 
 function Error.asString(self)
-	return self.filename .. ":" .. self.pos.line + 1 .. ":" .. self.pos.column + 1 .. ": " .. self.details
+	return self.filename .. ":" .. self.pos.line .. ":" .. self.pos.column .. ": " .. self.details
 end
 
 return Error

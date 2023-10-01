@@ -1,6 +1,6 @@
 local Lexer = require("lexer")
 
-local lexer = Lexer:new("<stdin>", "+-*/%!")
+local lexer = Lexer:new("<stdin>", "+-*/%!$")
 local tokens, errors = lexer:tokenize()
 
 if #errors > 0 then
