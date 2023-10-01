@@ -50,17 +50,64 @@ function Parser.makeAst(self)
 end
 
 function Parser.parseStmt(self)
+	local token = self:at()
+	local next = self:next()
+
+	if token:match("Ident", "var") or token:match("Ident", "let") then
+		return self:parseVarDeclaration()
+	end
+
 	return self:parseExpr()
+end
+
+function Parser.parseVarDeclaration(self)
+	self:yum()
+	local ident = self:yum().value
+
+	if not self:at():match("BinOp", "=") then
+		return {
+			type = "VarDeclaration",
+			ident = ident,
+			value = {
+				type = "NullLiteral",
+			},
+		}
+	end
+
+	self:yum()
+	local value = self:parseExpr()
+
+	return {
+		type = "VarDeclaration",
+		ident = ident,
+		value = value,
+	}
 end
 
 function Parser.parseExpr(self)
 	local next = self:next()
 
 	if next.type == "BinOp" then
+		if next.value == "=" then
+			return self:parseAssignmentExpr()
+		end
+
 		return self:parseAdditiveExpr()
 	end
 
 	return self:parsePrimaryExpr()
+end
+
+function Parser.parseAssignmentExpr(self)
+	local ident = self:yum().value
+	self:yum()
+	local value = self:parseExpr()
+
+	return {
+		type = "AssignmentExpr",
+		ident = ident,
+		value = value,
+	}
 end
 
 function Parser.parseAdditiveExpr(self)
@@ -112,9 +159,27 @@ function Parser.parsePrimaryExpr(self)
 			type = "StringLiteral",
 			value = token.value,
 		}
+	elseif token.type == "Ident" then
+		if token.value == "true" or token.value == "false" then
+			local val = false
+
+			if token.value == "true" then
+				val = true
+			end
+
+			return {
+				type = "BooleanLiteral",
+				value = val
+			}
+		end
+
+		return {
+			type = "Identifier",
+			name = token.value,
+		}
 	end
 
-	return Error:new(self.filename, {line=1, column=1}, "Token type '" .. token.type .. "' has not been initialized for parsing")
+	return Error:new(self.filename, token.pos, "Token type '" .. token.type .. "' has not been initialized for parsing")
 end
 
 return Parser

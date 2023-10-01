@@ -50,13 +50,13 @@ function lexer.tokenize(self)
 	while self:notEof() do
 		if str_includes(strings.WHITESPACE, self:at()) then
 		elseif str_includes(strings.OPERATORS, self:at()) then
-			table.insert(tokens, Token:new("BinOp", self:at()))
+			table.insert(tokens, Token:new("BinOp", self:at(), self.pos))
 
 		elseif str_includes(strings.PARENTHESES, self:at()) then
-			table.insert(tokens, Token:new("Paren", self:at()))
+			table.insert(tokens, Token:new("Paren", self:at(), self.pos))
 
 		elseif str_includes(strings.BRACKETS, self:at()) then
-			table.insert(tokens, Token:new("Bracket", self:at()))
+			table.insert(tokens, Token:new("Bracket", self:at(), self.pos))
 
 		elseif str_includes(strings.DIGITS, self:at()) then
 			table.insert(tokens, self:makeNumber())
@@ -99,7 +99,7 @@ function lexer.makeNumber(self)
 
 	self:advance(-1)
 
-	return Token:new("Number", tonumber(numStr))
+	return Token:new("Number", tonumber(numStr), self.pos)
 end
 
 function lexer.makeString(self)
@@ -113,7 +113,7 @@ function lexer.makeString(self)
 		self:advance()
 	end
 
-	return Token:new("String", str)
+	return Token:new("String", str, self.pos)
 end
 
 function lexer.makeIdent(self)
@@ -126,7 +126,7 @@ function lexer.makeIdent(self)
 
 	self:advance(-1)
 
-	return Token:new("Ident", ident)
+	return Token:new("Ident", ident, self.pos)
 end
 
 return lexer

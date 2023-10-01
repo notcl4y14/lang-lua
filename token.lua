@@ -1,11 +1,12 @@
 local Token = {}
 Token.__index = Token
 
-function Token.new(self, type, value)
+function Token.new(self, type, value, pos)
 	local this = setmetatable({}, self)
 
 	this.type = type
 	this.value = value or nil
+	this.pos = pos
 
 	return this
 end

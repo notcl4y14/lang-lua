@@ -26,7 +26,7 @@ local function run(filename, code)
 	end
 
 	for _, node in pairs(ast.body) do
-		print(node.type, node.left, node.operator, node.right, node.value)
+		print(node.type, node.left, node.operator, node.right, node.value, node.name, node.ident)
 	end
 end
 
