@@ -177,10 +177,6 @@ function Parser.parsePrimaryExpr(self)
 			type = "Identifier",
 			name = token.value,
 		}
-	elseif token.type == "BinOp" then
-		if token.value == ";" then
-			self:yum()
-		end
 	end
 
 	return Error:new(self.filename, token.pos, "Token type '" .. token.type .. "' has not been initialized for parsing")
